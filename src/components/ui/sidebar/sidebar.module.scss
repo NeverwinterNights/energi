@@ -1,0 +1,40 @@
+.root {
+  position: sticky;
+  top: 60px;
+
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 104px;
+
+  width: 160px;
+  height: calc(100vh - 60px);
+
+  // padding: 75px 16px 0 60px;
+
+  color: var(--light-100);
+
+  background-color: var(--dark-700);
+  border-right: solid 1px var(--dark-100);
+}
+
+.disabled {
+  cursor: auto;
+  color: var(--dark-100);
+
+  svg {
+    color: var(--dark-100);
+  }
+
+  p {
+    color: var(--dark-100);
+  }
+
+  &:hover * {
+    color: var(--dark-100);
+  }
+
+  &:focus {
+    border: 2px solid transparent;
+  }
+}

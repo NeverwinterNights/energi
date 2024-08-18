@@ -1,0 +1,31 @@
+.btnFooter {
+  display: flex;
+  justify-content: space-between;
+}
+
+.btn {
+  width: 130px;
+}
+
+.text {
+  display: inline-block;
+  margin-bottom: 18px;
+}
+
+.selectWrapper {
+  margin-bottom: 48px;
+}
+
+.select {
+  width: 100%;
+  background-color: var(--dark-300);
+}
+
+.rootTextArea {
+  margin-top: 10px;
+}
+
+.textArea {
+  padding: 5px !important;
+  background-color: var(--dark-500);
+}
