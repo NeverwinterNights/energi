@@ -1,31 +1,14 @@
-.btnFooter {
-  display: flex;
-  justify-content: space-between;
+
+.root {
+  width: 300px;
 }
 
-.btn {
-  width: 130px;
+.card {
+  padding: 50px 30px;
+  background-color: var(--dark-500);
 }
 
 .text {
-  display: inline-block;
-  margin-bottom: 18px;
-}
-
-.selectWrapper {
-  margin-bottom: 48px;
-}
-
-.select {
-  width: 100%;
-  background-color: var(--dark-300);
-}
-
-.rootTextArea {
-  margin-top: 10px;
-}
-
-.textArea {
-  padding: 5px !important;
-  background-color: var(--dark-500);
+  text-align: center;
+  margin-bottom: 35px;
 }

@@ -1,125 +1,100 @@
-import React, { useState } from "react";
-import { Button, ControlledSelect, Typography } from "@/components";
-import { useTranslation } from "@/hooks";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { BanFormValues, banModalSchema } from "@/schemas/ban-modal-schema";
-import { Trans } from "@/components/trans";
-import s from "./ban-modal.module.scss";
-import { ControlledTextArea } from "@/components/controlled/controlled-text-area";
+import s from "./create-user-modal.module.scss";
+import { Button, Card, Typography } from "@/components/ui";
+import {
+  CreateUserFormValues,
+  createUserModalSchema,
+} from "@/schemas/create-user-modal-schema";
+import { ControlledInput } from "../controlled/controlled-input";
+import { useEffect } from "react";
+import { phoneFormatter } from "@/helpers";
+import { addUser } from "@/store/user-slice";
+import { useAppDispatch } from "@/store/store";
 
-type Props = {
-  name: string;
-  onClick: (data: BanFormValues) => void;
-  onCancelClick: () => void;
-  banned: boolean;
-};
+// type Props = {
+//   // onClick: (data: CreateUserFormValues) => void;
+// };
 
-export const BanModal = ({ name, onClick, onCancelClick, banned }: Props) => {
-  const [textAreaValue, setTextAreaValue] = useState("");
-  const { t } = useTranslation();
-  const selectOptions = [
-    { label: t.banModal.bad, value: t.banModal.bad },
-    { label: t.banModal.advertising, value: t.banModal.advertising },
-    { label: t.banModal.another, value: t.banModal.another },
-  ];
-
-  const { handleSubmit, watch, control } = useForm<BanFormValues>({
-    mode: "onChange",
-    resolver: zodResolver(banModalSchema(t)),
-    defaultValues: { reason: "" },
+export const CreateUserModal = () => {
+  const {
+    handleSubmit,
+    control,
+    watch,
+    formState: { isValid },
+    setValue,
+  } = useForm<CreateUserFormValues>({
+    mode: "onBlur",
+    resolver: zodResolver(createUserModalSchema()),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      username: "",
+      phone: "",
+    },
   });
+  const dispatch = useAppDispatch();
 
-  const onSubmit = (data: BanFormValues) => {
+  const phoneValue = watch("phone");
+  // const addUserHandler = (data: CreateUserFormValues) => {
+  //   dispatch(addUser(data));
+  // };
+  useEffect(() => {
+    if (phoneValue !== undefined && phoneValue !== "") {
+      const formattedPhone = phoneFormatter(phoneValue);
+      setValue("phone", formattedPhone, { shouldValidate: false });
+    }
+  }, [phoneValue, setValue]);
+
+  const onSubmit = (data: CreateUserFormValues) => {
     try {
-      onClick(data);
+      dispatch(addUser(data));
     } catch (error) {
       console.log(error);
     }
   };
 
-  const textAreaHandler = (value: string) => {
-    setTextAreaValue(value);
-  };
-
   return (
-    <>
-      {banned ? (
-        <div>
-          <Typography className={s.text} variant="regular_text_16" as="span">
-            <Trans
-              text={t.userList.areYouUnBanUser(name)}
-              tags={{
-                "1": (name) => (
-                  <Typography variant="bold_text_16" color="inherit" as="span">
-                    {name}
-                  </Typography>
-                ),
-              }}
-            />
-          </Typography>
-          <div className={s.btnFooter}>
-            <Button
-              onClick={onCancelClick}
-              className={s.btn}
-              variant={"primary"}
-            >
-              {t.no}
-            </Button>
-            <Button onClick={onClick} className={s.btn} variant={"ghost"}>
-              {t.ok}
-            </Button>
-          </div>
+    <Card className={s.card}>
+      <Typography className={s.text} variant="bold_text_16" as="div">
+        Create User
+      </Typography>
+      <form onSubmit={handleSubmit(onSubmit)} className={s.root}>
+        <ControlledInput
+          label={"Username"}
+          control={control}
+          name={"username"}
+        />
+        <ControlledInput
+          label={"First Name"}
+          control={control}
+          name={"firstName"}
+        />
+        <ControlledInput
+          label={"Last Name"}
+          control={control}
+          name={"lastName"}
+        />
+        <ControlledInput label={"Email"} control={control} name={"email"} />
+        <ControlledInput
+          label={"Phone"}
+          startIcon={"+"}
+          control={control}
+          name={"phone"}
+        />
+        <div className={s.btnFooter}>
+          <Button
+            disabled={!isValid}
+            fullWidth
+            type={"submit"}
+            className={s.btn}
+            variant={"primary"}
+          >
+            Create User
+          </Button>
         </div>
-      ) : (
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <Typography className={s.text} variant="regular_text_16" as="span">
-            <Trans
-              text={t.userList.areYouBanUser(name)}
-              tags={{
-                "1": (name) => (
-                  <Typography variant="bold_text_16" color="inherit" as="span">
-                    {name}
-                  </Typography>
-                ),
-              }}
-            />
-          </Typography>
-          <div className={s.selectWrapper}>
-            <ControlledSelect
-              className={s.select}
-              name={"reason"}
-              control={control}
-              options={selectOptions}
-              placeholder={t.banModal.reasonForBan}
-            />
-            {watch("reason") === t.banModal.another && (
-              <ControlledTextArea
-                counter={100}
-                className={s.rootTextArea}
-                classNameTextArea={s.textArea}
-                rows={5}
-                control={control}
-                name={"textArea"}
-                setValueFromForm={textAreaHandler}
-              />
-            )}
-          </div>
-
-          <div className={s.btnFooter}>
-            <Button
-              onClick={onCancelClick}
-              className={s.btn}
-              variant={"primary"}
-            >
-              {t.no}
-            </Button>
-            <Button type={"submit"} className={s.btn} variant={"ghost"}>
-              {t.ok}
-            </Button>
-          </div>
-        </form>
-      )}
-    </>
+      </form>
+    </Card>
   );
 };

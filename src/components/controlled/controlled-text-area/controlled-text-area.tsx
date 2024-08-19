@@ -5,8 +5,8 @@ import {
   useController,
 } from "react-hook-form";
 
-import { TextArea, TextAreaProps } from "@/components";
 import { ChangeEvent } from "react";
+import { TextArea, TextAreaProps } from "@/components/ui";
 
 export type ControlledTextFieldProps<T extends FieldValues> = {
   name: FieldPath<T>;

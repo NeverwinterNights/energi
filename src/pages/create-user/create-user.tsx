@@ -1,6 +1,6 @@
-import { LoginComponent } from "@/components/login";
+import { CreateUserModal } from "@/components/create-user-modal";
 
-export const Login = () => {
+export const CreateUser = () => {
   return (
     <div
       style={{
@@ -10,7 +10,7 @@ export const Login = () => {
         justifyContent: "center",
       }}
     >
-      <LoginComponent />
+      <CreateUserModal />
     </div>
   );
 };

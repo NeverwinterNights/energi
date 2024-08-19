@@ -1,19 +1,21 @@
 import { z } from "zod";
 
-import { LocaleType } from "locales/ru";
-
-export const loginSchema = (t: LocaleType) => {
+export const loginSchema = () => {
   return z.object({
     email: z
       .string()
       .trim()
-      .min(1, t.errors.nonemptyEmail)
-      .email(t.errors.regexEmail),
-    password: z
+      .min(1, "Enter valid email address")
+      .email("Not valid email address"),
+    phone: z
+      .string()
+      // .regex(/^\+?\d(?: \d)*$/)
+      .length(16, "Phone must be at 12 digits"),
+    username: z
       .string()
       .trim()
-      .min(1, t.errors.nonemptyPassword)
-      .min(3, t.errors.minPassword(3)),
+      .min(4, "Username must be at least 4 characters")
+      .max(20, "Username max length 20 characters"),
   });
 };
 

@@ -1,14 +1,12 @@
-import { Navigate, Outlet } from 'react-router-dom'
-
-import { PATH } from '../../common'
-
-import { MainLoader } from '@/assets/loaders/main-loader/main-loader.tsx'
-import { useMeQuery } from '@/features/auth/service/api/auth.api.ts'
+import { Navigate, Outlet } from "react-router-dom";
+import { PATH } from "@/router/path";
+import { useAppSelector } from "@/store/store";
+import { isAuthenticated } from "@/store/auth-slice";
 
 export const PrivateRoute = () => {
-  const { data, isLoading } = useMeQuery()
+  const isAuth = useAppSelector(isAuthenticated);
+  console.log("isAuth", isAuth);
+  // if (isLoading) return <MainLoader />
 
-  if (isLoading) return <MainLoader />
-
-  return data ? <Outlet /> : <Navigate to={PATH.LOGIN} />
-}
+  return isAuth ? <Outlet /> : <Navigate to={PATH.LOGIN} />;
+};

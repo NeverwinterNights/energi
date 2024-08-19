@@ -1,40 +1,25 @@
-import type { Meta, StoryObj } from '@storybook/react'
+import type { Meta, StoryObj } from "@storybook/react";
 
-import { Scrollbar } from './index'
+import { Scrollbar } from "./index";
 
-import s from './scrollbar.module.scss'
-
-import {
-  BookmarkOutline,
-  HomeOutline,
-  LogOutOutline,
-  MessageCircleOutline,
-  PersonOutline,
-  PlusSquareOutline,
-  SearchIcon,
-  TrendingUpOutline,
-} from '@/assets/icons'
-import { Typography } from '@/components'
+import s from "./scrollbar.module.scss";
+import { Typography } from "@/components/ui";
+import { CalendarIcon, HomeOutline, Person } from "@/assets/icons";
 
 const meta = {
-  title: 'UI Components/Scrollbar',
+  title: "UI Components/Scrollbar",
   component: Scrollbar,
-  tags: ['autodocs'],
-} satisfies Meta<typeof Scrollbar>
+  tags: ["autodocs"],
+} satisfies Meta<typeof Scrollbar>;
 
-export default meta
-type Story = StoryObj<typeof meta>
+export default meta;
+type Story = StoryObj<typeof meta>;
 
 const sidebarItems = [
-  { href: '/', icon: <HomeOutline />, text: 'Home' },
-  { href: '/create', icon: <PlusSquareOutline />, text: 'Create' },
-  { href: '/profile', icon: <PersonOutline />, text: 'My Profile' },
-  { href: '/messenger', icon: <MessageCircleOutline />, text: 'Messenger' },
-  { href: '/search', icon: <SearchIcon />, text: 'Search' },
-  { href: '/statistics', icon: <TrendingUpOutline />, text: 'Statistics' },
-  { href: '/favorites', icon: <BookmarkOutline />, text: 'Favorites' },
-  { href: '/logout', icon: <LogOutOutline />, text: 'Log Out' },
-]
+  { href: "/", text: "Home", icon: <HomeOutline /> },
+  { href: "/users", text: "Users", icon: <Person /> },
+  { href: "/ads", text: "ads", icon: <CalendarIcon /> },
+];
 
 export const Vertical: Story = {
   args: {
@@ -52,4 +37,4 @@ export const Vertical: Story = {
       </>
     ),
   },
-}
+};

@@ -1,1 +1,1 @@
-export { BanModal } from "./ban-modal";
+export { CreateUserModal } from "./create-user-modal";

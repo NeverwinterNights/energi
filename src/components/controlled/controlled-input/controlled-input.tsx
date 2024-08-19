@@ -4,15 +4,14 @@ import {
   FieldValues,
   useController,
 } from "react-hook-form";
-
-import { InputPropsType, TextField } from "@/components";
+import { Input, InputPropsType } from "@/components/ui";
 
 type Props<T extends FieldValues> = {
   control: Control<T>;
   name: FieldPath<T>;
 } & Omit<InputPropsType, "onChange" | "value">;
 
-export const ControlledTextField = <T extends FieldValues>({
+export const ControlledInput = <T extends FieldValues>({
   control,
   name,
   className,
@@ -24,11 +23,6 @@ export const ControlledTextField = <T extends FieldValues>({
   } = useController({ name, control });
 
   return (
-    <TextField
-      error={error?.message}
-      className={className}
-      {...field}
-      {...rest}
-    />
+    <Input error={error?.message} className={className} {...field} {...rest} />
   );
 };
