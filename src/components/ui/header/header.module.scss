@@ -5,6 +5,15 @@
   border-bottom: 1px solid var(--dark-100);
   align-items: center;
   height: 60px;
+  padding: 0 15px;
 
 }
 
+.buttons {
+  display: flex;
+  gap: 16px;
+}
+
+.modal {
+  width: 400px;
+}

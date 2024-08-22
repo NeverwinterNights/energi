@@ -4,42 +4,26 @@ import { Button, Card, Typography } from "@/components/ui";
 import { ControlledInput } from "@/components/controlled/controlled-input";
 import { LoginFormValues, loginSchema } from "@/schemas/login-schema";
 import s from "./login-component.module.scss";
-import { useAppDispatch, useAppSelector } from "@/store/store";
-import { login } from "@/store/auth-slice";
 import { useNavigate } from "react-router-dom";
 import { PATH } from "@/router";
-import { selectUsers } from "@/store/user-slice";
-import { useEffect } from "react";
-import { phoneFormatter } from "@/helpers";
+import { useAppDispatch } from "@/store/store";
+import { addUserAsync } from "@/store/auth-slice";
 
 export const LoginComponent = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
-  const { handleSubmit, control, watch, setValue } = useForm<LoginFormValues>({
+  const { handleSubmit, control } = useForm<LoginFormValues>({
     mode: "onBlur",
     resolver: zodResolver(loginSchema()),
-    defaultValues: { email: "", phone: "", username: "" },
+    defaultValues: { email: "", password: "" },
   });
-  const users = useAppSelector(selectUsers);
-  const phoneValue = watch("phone");
 
-  // const addUserHandler = (data: CreateUserFormValues) => {
-  //   dispatch(addUser(data));
-  // };
-  useEffect(() => {
-    if (phoneValue !== undefined && phoneValue !== "") {
-      const formattedPhone = phoneFormatter(phoneValue);
-      setValue("phone", formattedPhone, { shouldValidate: false });
-    }
-  }, [phoneValue, setValue]);
   const onSubmit = async (data: LoginFormValues) => {
-    try {
-      dispatch(login({ ...data, users }));
-      navigate(PATH.MAIN);
-    } catch (e: any) {
-      console.log("error", e);
-    }
+    await dispatch(
+      addUserAsync({ email: data.email, password: data.password }),
+    );
+    navigate(PATH.MAIN);
   };
 
   return (
@@ -50,22 +34,16 @@ export const LoginComponent = () => {
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className={s.fields}>
           <ControlledInput
-            name="username"
-            control={control}
-            label={"Username"}
-            type="text"
-          />
-          <ControlledInput
             name="email"
             control={control}
             label={"Email"}
             type="email"
           />
           <ControlledInput
-            label={"Phone"}
-            startIcon={"+"}
+            type="password"
+            label={"Password"}
             control={control}
-            name={"phone"}
+            name="password"
           />
         </div>
         <Button

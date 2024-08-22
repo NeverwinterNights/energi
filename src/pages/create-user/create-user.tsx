@@ -1,4 +1,4 @@
-import { CreateUserModal } from "@/components/create-user-modal";
+import { SignUp } from "@/components/sign-up";
 
 export const CreateUser = () => {
   return (
@@ -10,7 +10,7 @@ export const CreateUser = () => {
         justifyContent: "center",
       }}
     >
-      <CreateUserModal />
+      <SignUp />
     </div>
   );
 };

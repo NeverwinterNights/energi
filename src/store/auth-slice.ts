@@ -1,55 +1,107 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { User } from "@/store/user-slice";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { doc, getDoc } from "firebase/firestore";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { auth, db } from "@/firebase";
 
-type Auth = {
-  id: string;
-  isAuthenticated: boolean;
+export type User = {
+  uid: string;
+  email: string | null;
+  firstName: string;
+  lastName: string;
+  phone: string;
   username: string;
-  email: string;
+  createdAt?: string;
 };
 
-const initialState: Auth = {} as Auth;
+export type UsersState = {
+  authorizedUser: User | null;
+};
+
+// Инициализация состояния с типизацией
+const initialState: UsersState = {
+  authorizedUser: null,
+};
 
 const slice = createSlice({
   name: "auth",
   initialState,
-  reducers: {
-    login: (
-      state,
-      action: PayloadAction<{
-        email: string;
-        username: string;
-        phone: string;
-        users: User[];
-      }>,
-    ) => {
-      const { email, phone, users, username } = action.payload;
-      console.log("action.payload", action.payload);
-      const user = users.find(
-        (user) =>
-          user.email === email &&
-          user.phone === phone &&
-          user.username === username,
-      );
-      if (user) {
-        state.email = user.email;
-        state.id = user.id;
-        state.username = user.username;
-        state.isAuthenticated = true;
-      } else {
-        state.isAuthenticated = false;
-      }
-    },
-    logout: () => {
-      return initialState;
-    },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder.addCase(
+      addUserAsync.fulfilled,
+      (state, action: PayloadAction<User>) => {
+        state.authorizedUser = action.payload;
+      },
+    );
+    builder.addCase(addUserAsync.rejected, (_state, action) => {
+      console.error("Error logging in:", action.payload);
+    });
+    builder.addCase(logoutUser.fulfilled, (state) => {
+      state.authorizedUser = null;
+      localStorage.removeItem("token");
+    });
+    builder.addCase(logoutUser.rejected, (_state, action) => {
+      console.error("Error logging out:", action.payload);
+    });
   },
   selectors: {
-    isAuthenticated: (sliceState) => sliceState.isAuthenticated,
-    userData: (state) => state,
+    isAuth: (sliceState) => !!sliceState.authorizedUser,
+    getUserData: (sliceState) => sliceState.authorizedUser,
   },
 });
 
+//thunks
+export const addUserAsync = createAsyncThunk(
+  "users/addUserAsync",
+  async (
+    loginData: { email: string; password: string },
+    { rejectWithValue },
+  ) => {
+    try {
+      // Авторизация пользователя через Firebase Authentication
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        loginData.email,
+        loginData.password,
+      );
+      const user = userCredential.user;
+      const accessToken = await user.getIdToken();
+      localStorage.setItem("token", accessToken);
+      // Получение дополнительных данных пользователя из Firestore
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        return {
+          uid: user.uid,
+          email: user.email,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          phone: userData.phone,
+          username: userData.username,
+          createdAt: user.metadata.creationTime,
+        };
+      } else {
+        throw new Error("No such document!");
+      }
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  },
+);
+
+export const logoutUser = createAsyncThunk(
+  "users/logoutUserAsync",
+  async (_, { rejectWithValue }) => {
+    try {
+      await signOut(auth);
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  },
+);
+
 export const authReducer = slice.reducer;
-export const { login, logout } = slice.actions;
-export const { isAuthenticated, userData } = slice.selectors;
+
+export const { isAuth, getUserData } = slice.selectors;

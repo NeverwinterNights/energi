@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { passwordRegex } from "@/consts/regex";
 
 export const createUserModalSchema = () => {
   return z.object({
@@ -22,6 +23,15 @@ export const createUserModalSchema = () => {
       .string()
       // .regex(/^\+?\d(?: \d)*$/)
       .length(16, "Phone must be at 12 digits"),
+    password: z
+      .string()
+      .regex(
+        passwordRegex,
+        "Password must contain 0-9, a-z, A-Z, ! \" # $ % & \\' ( ) * + , - . / : ; < = > ? @ [ \\\\ ] ^' +\n" +
+          "      ' _` { | } ~",
+      )
+      .trim()
+      .min(6, "Password must be at least 6 characters"),
   });
   // .transform(({ phone, ...rest }) => {
   //   console.log("transform");

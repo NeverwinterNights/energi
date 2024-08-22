@@ -3,8 +3,8 @@ import { CalendarIcon, HomeOutline, Person } from "@/assets/icons";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import s from "./sidebar-layout.module.scss";
 import { useAppSelector } from "@/store/store";
-import { isAuthenticated } from "@/store/auth-slice";
 import { clsx } from "clsx";
+import { isAuth } from "@/store/auth-slice";
 
 const sidebarItems = [
   { href: "/", text: "Home", icon: <HomeOutline /> },
@@ -12,7 +12,7 @@ const sidebarItems = [
   { href: "/ads", text: "Advert", icon: <CalendarIcon /> },
 ];
 export const SidebarLayout = () => {
-  const isAuth = useAppSelector(isAuthenticated);
+  const isAuthUser = useAppSelector(isAuth);
   const classNames = {
     sidebarItem: (href: string) =>
       clsx(s.item, {
@@ -23,10 +23,9 @@ export const SidebarLayout = () => {
   };
   const location = useLocation(); // Получаем информацию о текущем URL
   const currentPath = location.pathname;
-  console.log("currentPath", currentPath);
   return (
     <>
-      <Header isAuth={isAuth} />
+      <Header isAuth={isAuthUser} />
       <div className={s.root}>
         <Sidebar className={s.sidebar}>
           {sidebarItems.map((item, index) => (

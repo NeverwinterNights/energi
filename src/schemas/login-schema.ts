@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { passwordRegex } from "@/consts/regex";
 
 export const loginSchema = () => {
   return z.object({
@@ -7,15 +8,15 @@ export const loginSchema = () => {
       .trim()
       .min(1, "Enter valid email address")
       .email("Not valid email address"),
-    phone: z
+    password: z
       .string()
-      // .regex(/^\+?\d(?: \d)*$/)
-      .length(16, "Phone must be at 12 digits"),
-    username: z
-      .string()
+      .regex(
+        passwordRegex,
+        "Password must contain 0-9, a-z, A-Z, ! \" # $ % & \\' ( ) * + , - . / : ; < = > ? @ [ \\\\ ] ^' +\n" +
+          "      ' _` { | } ~",
+      )
       .trim()
-      .min(4, "Username must be at least 4 characters")
-      .max(20, "Username max length 20 characters"),
+      .min(6, "Password must be at least 6 characters"),
   });
 };
 
