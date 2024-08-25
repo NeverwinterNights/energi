@@ -1,5 +1,5 @@
-import { z } from "zod";
 import { passwordRegex } from "@/consts/regex";
+import { z } from "zod";
 
 export const loginSchema = () => {
   return z.object({

@@ -1,15 +1,18 @@
-import { configureStore } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
-import { setupListeners } from "@reduxjs/toolkit/query";
-import { userReducer } from "@/store/user-slice";
-import { authReducer } from "@/store/auth-slice";
+
 import { advertReducer } from "@/store/advert-slice";
+import { appReducer } from "@/store/app-slice";
+import { authReducer } from "@/store/auth-slice";
+import { userReducer } from "@/store/user-slice";
+import { configureStore } from "@reduxjs/toolkit";
+import { setupListeners } from "@reduxjs/toolkit/query";
 
 export const store = configureStore({
   reducer: {
-    users: userReducer,
-    auth: authReducer,
     advert: advertReducer,
+    auth: authReducer,
+    users: userReducer,
+    app: appReducer,
   },
 });
 export type RootState = ReturnType<typeof store.getState>;

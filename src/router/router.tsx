@@ -1,71 +1,77 @@
 import {
-  createBrowserRouter,
   RouteObject,
   RouterProvider,
+  createBrowserRouter,
 } from "react-router-dom";
-import { PrivateRoute } from "@/router/private-route";
-import { PATH } from "@/router/path";
-import { Advert, CreateUser, Login, Main, Users } from "@/pages";
+
 import { Layout, SidebarLayout } from "@/components/layout";
+import { Advert, CreateUser, Login, Main, Users } from "@/pages";
 import { Home } from "@/pages/home";
+import { Profile } from "@/pages/profile";
+import { PATH } from "@/router/path";
+import { PrivateRoute } from "@/router/private-route";
 
 const publicRoutes: RouteObject[] = [
   {
-    path: PATH.LOGIN,
-    element: <Layout />,
     children: [
       {
-        path: "",
         element: <Login />,
+        path: "",
       },
     ],
-  },
-  {
-    path: PATH.CREATE,
     element: <Layout />,
-    children: [
-      {
-        path: "",
-        element: <CreateUser />,
-      },
-    ],
+    path: PATH.LOGIN,
   },
   {
-    path: PATH.MAIN,
-    element: <SidebarLayout />,
     children: [
       {
+        element: <CreateUser />,
         path: "",
-        element: <Main />,
       },
     ],
+    element: <Layout />,
+    path: PATH.CREATE,
+  },
+  {
+    children: [
+      {
+        element: <Main />,
+        path: "",
+      },
+    ],
+    element: <SidebarLayout />,
+    path: PATH.MAIN,
   },
 ];
 
 const privateRoutes: RouteObject[] = [
   {
-    path: PATH.HOME,
     element: <Home />,
+    path: PATH.HOME,
   },
   {
-    path: PATH.USERS,
+    element: <Profile />,
+    path: PATH.PROFILE,
+  },
+  {
     element: <Users />,
+    path: PATH.USERS,
   },
   {
-    path: PATH.ADVERT,
     element: <Advert />,
+    path: PATH.ADVERT,
   },
 ];
 
 const router = createBrowserRouter([
   {
-    element: <PrivateRoute />,
     children: [
       {
-        element: <SidebarLayout />,
         children: privateRoutes,
+        element: <SidebarLayout />,
       },
     ],
+    element: <PrivateRoute />,
   },
   ...publicRoutes,
 ]);

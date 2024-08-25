@@ -1,31 +1,35 @@
-import { memo } from 'react'
+import { memo } from "react";
 
-import * as SelectRadix from '@radix-ui/react-select'
-import { clsx } from 'clsx'
+import { Typography } from "@/components/ui";
+import * as SelectRadix from "@radix-ui/react-select";
+import { clsx } from "clsx";
 
-import s from './../select.module.scss'
+import s from "./../select.module.scss";
 
-import { Typography } from '../../typography'
-import { Option } from '../select'
+import { Option } from "../select";
 
 type Props = {
-  options: Option[]
-  variant?: 'pagination' | 'primary'
-}
+  options: Option[];
+  variant?: "pagination" | "primary";
+};
 
-export const SelectContent = memo(({ options, variant = 'primary' }: Props) => {
+export const SelectContent = memo(({ options, variant = "primary" }: Props) => {
   const classNames = {
     content: clsx(s.content, s[variant]),
     item: clsx(s.item, s[variant]),
-  }
+  };
 
   return (
-    <SelectRadix.Content className={classNames.content} position={'popper'}>
+    <SelectRadix.Content className={classNames.content} position={"popper"}>
       <SelectRadix.Viewport>
-        {options.map(option => (
-          <SelectRadix.Item className={classNames.item} key={option.value} value={option.value}>
+        {options.map((option) => (
+          <SelectRadix.Item
+            className={classNames.item}
+            key={option.value}
+            value={option.value}
+          >
             <SelectRadix.ItemText>
-              <Typography asComponent={'span'} className={s.active}>
+              <Typography as={"span"} className={s.active}>
                 {option.label}
               </Typography>
             </SelectRadix.ItemText>
@@ -33,5 +37,5 @@ export const SelectContent = memo(({ options, variant = 'primary' }: Props) => {
         ))}
       </SelectRadix.Viewport>
     </SelectRadix.Content>
-  )
-})
+  );
+});

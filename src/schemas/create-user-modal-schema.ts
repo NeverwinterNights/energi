@@ -1,13 +1,9 @@
-import { z } from "zod";
 import { passwordRegex } from "@/consts/regex";
+import { z } from "zod";
 
 export const createUserModalSchema = () => {
   return z.object({
-    username: z
-      .string()
-      .trim()
-      .min(4, "Username must be at least 4 characters")
-      .max(20, "Username max length 20 characters"),
+    email: z.string().trim().min(3).max(30).email(),
     firstName: z
       .string()
       .trim()
@@ -18,11 +14,6 @@ export const createUserModalSchema = () => {
       .trim()
       .min(2, "Last Name must be at least 2 characters")
       .max(20, "Last Name max length 20 characters"),
-    email: z.string().trim().min(3).max(30).email(),
-    phone: z
-      .string()
-      // .regex(/^\+?\d(?: \d)*$/)
-      .length(16, "Phone must be at 12 digits"),
     password: z
       .string()
       .regex(
@@ -32,6 +23,15 @@ export const createUserModalSchema = () => {
       )
       .trim()
       .min(6, "Password must be at least 6 characters"),
+    phone: z
+      .string()
+      // .regex(/^\+?\d(?: \d)*$/)
+      .length(16, "Phone must be at 12 digits"),
+    username: z
+      .string()
+      .trim()
+      .min(4, "Username must be at least 4 characters")
+      .max(20, "Username max length 20 characters"),
   });
   // .transform(({ phone, ...rest }) => {
   //   console.log("transform");

@@ -1,10 +1,12 @@
-import s from "./header.module.scss";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import { Button, Modal, Typography } from "@/components/ui";
 import { PATH } from "@/router";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-
 import { logoutUser } from "@/store/auth-slice";
+import { useAppDispatch } from "@/store/store";
+
+import s from "./header.module.scss";
 
 type Props = {
   isAuth: boolean;
@@ -13,6 +15,9 @@ type Props = {
 export const Header = ({ isAuth }: Props) => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const dispatch = useAppDispatch();
+  // const isLoading = useAppSelector(getIsLoading);
+
   const logoutHandler = () => {
     setIsModalOpen(!isModalOpen);
   };
@@ -21,13 +26,18 @@ export const Header = ({ isAuth }: Props) => {
   };
   const handleModalOpened = async () => {
     try {
-      logoutUser();
+      dispatch(logoutUser());
       setIsModalOpen(false);
       navigate(PATH.HOME);
     } catch (error: any) {
       console.error("Error logging out:", error.message);
     }
   };
+
+  // if (isLoading) {
+  //   return <Loader />;
+  // }
+
   return (
     <>
       <Modal
@@ -38,10 +48,10 @@ export const Header = ({ isAuth }: Props) => {
       >
         <>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <Button onClick={handleModalOpened} variant="primary">
+            <Button onClick={handleModalOpened} variant={"primary"}>
               Logout
             </Button>
-            <Button onClick={handleModalClosed} variant="secondary">
+            <Button onClick={handleModalClosed} variant={"secondary"}>
               Cancel
             </Button>
           </div>

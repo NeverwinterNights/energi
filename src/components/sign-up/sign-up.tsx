@@ -1,19 +1,23 @@
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useNavigate } from "react-router-dom";
 
-import s from "./sign-up.module.scss";
-import { Button, Card, Typography } from "@/components/ui";
+import { Button, Card, Modal, Typography } from "@/components/ui";
+import { auth, db } from "@/firebase";
+import { phoneFormatter } from "@/helpers";
+import { PATH } from "@/router";
 import {
   CreateUserFormValues,
   createUserModalSchema,
 } from "@/schemas/create-user-modal-schema";
-import { ControlledInput } from "../controlled/controlled-input";
-import { useEffect } from "react";
-import { phoneFormatter } from "@/helpers";
+import { zodResolver } from "@hookform/resolvers/zod";
 // import { useAppDispatch } from "@/store/store";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth, db } from "@/firebase";
 import { doc, setDoc } from "firebase/firestore";
+
+import s from "./sign-up.module.scss";
+
+import { ControlledInput } from "../controlled/controlled-input";
 
 export const SignUp = () => {
   const {
@@ -34,13 +38,15 @@ export const SignUp = () => {
       password: "",
     },
   });
-  // const dispatch = useAppDispatch();
+  const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
 
   const phoneValue = watch("phone");
 
   useEffect(() => {
     if (phoneValue !== undefined && phoneValue !== "") {
       const formattedPhone = phoneFormatter(phoneValue);
+
       setValue("phone", formattedPhone, { shouldValidate: false });
     }
   }, [phoneValue, setValue]);
@@ -55,66 +61,96 @@ export const SignUp = () => {
 
       const user = userCredential.user;
 
-      // Сохранение дополнительных данных в Firestore
       await setDoc(doc(db, "users", user.uid), {
         firstName: data.firstName,
         lastName: data.lastName,
         phone: data.phone,
         email: data.email,
         username: data.username,
+        createdAt: user.metadata.creationTime,
       });
       console.log("User signed up and data saved:", user.uid);
+      setIsOpen(true);
     } catch (error: any) {
       console.error("Error signing up:", error.message);
     }
   };
+  const handleChangeModal = () => {
+    setIsOpen(false);
+    navigate(PATH.LOGIN);
+  };
 
   return (
-    <Card className={s.card}>
-      <Typography className={s.text} variant="bold_text_16" as="div">
-        Sign Up
-      </Typography>
-      <form onSubmit={handleSubmit(onSubmit)} className={s.root}>
-        <ControlledInput
-          label={"Username"}
-          control={control}
-          name={"username"}
-        />
-        <ControlledInput
-          label={"First Name"}
-          control={control}
-          name={"firstName"}
-        />
-        <ControlledInput
-          label={"Last Name"}
-          control={control}
-          name={"lastName"}
-        />
-        <ControlledInput label={"Email"} control={control} name={"email"} />
-        <ControlledInput
-          label={"Phone"}
-          startIcon={"+"}
-          control={control}
-          name={"phone"}
-        />
-        <ControlledInput
-          type="password"
-          label={"Password"}
-          control={control}
-          name="password"
-        />
-        <div className={s.btnFooter}>
+    <>
+      <Modal
+        className={s.modal}
+        title={"User successfully created"}
+        isOpen={isOpen}
+        onOpenChange={() => setIsOpen(false)}
+      >
+        <>
+          <Typography color={"inherit"} variant={"bold_text_14"}>
+            User successfully created
+          </Typography>
+
           <Button
-            disabled={!isValid}
-            fullWidth
-            type={"submit"}
-            className={s.btn}
             variant={"primary"}
+            onClick={handleChangeModal}
+            className={s.modalButton}
+            fullWidth
           >
-            Create User
+            <Typography color={"inherit"} variant={"h3"}>
+              Move to Login page
+            </Typography>
           </Button>
-        </div>
-      </form>
-    </Card>
+        </>
+      </Modal>
+      <Card className={s.card}>
+        <Typography className={s.text} variant={"bold_text_16"} as={"div"}>
+          Sign Up
+        </Typography>
+        <form onSubmit={handleSubmit(onSubmit)} className={s.root}>
+          <ControlledInput
+            label={"Username"}
+            control={control}
+            name={"username"}
+          />
+          <ControlledInput
+            label={"First Name"}
+            control={control}
+            name={"firstName"}
+          />
+          <ControlledInput
+            label={"Last Name"}
+            control={control}
+            name={"lastName"}
+          />
+          <ControlledInput label={"Email"} control={control} name={"email"} />
+          <ControlledInput
+            label={"Phone"}
+            startIcon={"+"}
+            control={control}
+            name={"phone"}
+          />
+          <ControlledInput
+            type={"password"}
+            label={"Password"}
+            control={control}
+            name={"password"}
+          />
+          <div className={s.btnFooter}>
+            <Button
+              disabled={!isValid}
+              fullWidth
+              type={"submit"}
+              className={s.btn}
+              variant={"primary"}
+            >
+              Create User
+            </Button>
+          </div>
+        </form>
+      </Card>
+    </>
   );
 };

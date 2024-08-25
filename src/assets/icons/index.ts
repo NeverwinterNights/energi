@@ -1,9 +1,10 @@
-export { CloseModal } from "./close-modal-icon";
 export { ArrowDownIcon } from "./arrow-down";
+export { CalendarIcon } from "./calendar";
+export { ClosedInputIcon } from "./close-input-icon";
+export { CloseModal } from "./close-modal-icon";
 export { Eye } from "./eye";
 export { EyeClosed } from "./eye-closed";
-export { SearchIcon } from "./search-icon";
-export { ClosedInputIcon } from "./close-input-icon";
 export { HomeOutline } from "./home-outline";
-export { CalendarIcon } from "./calendar";
 export { Person } from "./person";
+export { PersonOutline } from "./person-outline";
+export { SearchIcon } from "./search-icon";

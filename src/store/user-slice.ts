@@ -1,27 +1,25 @@
-import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { addDoc, collection, getDocs } from "firebase/firestore";
 import { db } from "@/firebase";
+import { setLoading } from "@/store/app-slice";
 import { Advertisement, User } from "@/types";
+import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { addDoc, collection, getDocs } from "firebase/firestore"; // Инициализация состояния с типизацией
 
 // Инициализация состояния с типизацией
 export type UsersState = {
-  users: User[];
   adverts: {
     [userId: string]: Advertisement[];
   };
+  users: User[];
 };
 
 // Инициализация состояния
 const initialState: UsersState = {
-  users: [], // Массив User[]
   adverts: {},
+  users: [], // Массив User[]
 };
 
 // Слайс
 const slice = createSlice({
-  name: "users",
-  initialState,
-  reducers: {},
   extraReducers: (builder) => {
     builder.addCase(
       fetchAllUsers.fulfilled,
@@ -36,6 +34,7 @@ const slice = createSlice({
       createAdvertisement.fulfilled,
       (state, action: PayloadAction<Advertisement>) => {
         const ad = action.payload;
+
         if (!state.adverts[ad.userId]) {
           state.adverts[ad.userId] = [];
         }
@@ -46,30 +45,43 @@ const slice = createSlice({
       console.error("Error creating advertisement:", action.payload);
     });
   },
+  initialState,
+  name: "users",
+  reducers: {},
+  selectors: {
+    getAllUsers: (state: UsersState) => state.users, // Селектор для получения всех пользователей
+  },
 });
 
 // Thunks
 export const fetchAllUsers = createAsyncThunk(
   "users/fetchAllUsers",
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, dispatch }) => {
     try {
+      dispatch(setLoading(true));
+
       const querySnapshot = await getDocs(collection(db, "users"));
       const users: User[] = [];
+
       querySnapshot.forEach((doc) => {
         const userData = doc.data();
+
         users.push({
-          uid: doc.id,
+          createdAt: userData.createdAt,
           email: userData.email,
           firstName: userData.firstName,
           lastName: userData.lastName,
           phone: userData.phone,
+          uid: doc.id,
           username: userData.username,
-          createdAt: userData.createdAt,
         });
       });
+
       return users;
     } catch (error: any) {
       return rejectWithValue(error.message);
+    } finally {
+      dispatch(setLoading(false));
     }
   },
 );
@@ -78,16 +90,16 @@ export const createAdvertisement = createAsyncThunk(
   "users/createAdvertisement",
   async (
     {
-      title,
       description,
-      price,
       photoUrl,
-    }: { title: string; description: string; price: number; photoUrl?: string },
+      price,
+      title,
+    }: { description: string; photoUrl?: string; price: number; title: string },
     { getState, rejectWithValue },
   ) => {
     try {
       // Получаем информацию о текущем пользователе из состояния
-      const state = getState() as { users: UsersState; auth: { uid: string } };
+      const state = getState() as { auth: { uid: string }; users: UsersState };
       const currentUser = state.users.users.find(
         (user) => user.uid === state.auth.uid,
       );
@@ -98,19 +110,20 @@ export const createAdvertisement = createAsyncThunk(
 
       // Создаем объявление
       const newAd: Omit<Advertisement, "id"> = {
-        title,
+        createdAt: new Date().toISOString(),
         description,
-        price,
-        userId: currentUser.uid,
-        username: currentUser.username,
         firstName: currentUser.firstName,
         lastName: currentUser.lastName,
-        createdAt: new Date().toISOString(),
         photoUrl,
+        price,
+        title,
+        userId: currentUser.uid,
+        username: currentUser.username,
       };
 
       // Добавляем объявление в Firebase Firestore
       const docRef = await addDoc(collection(db, "advertisements"), newAd);
+
       return { ...newAd, id: docRef.id };
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -119,4 +132,6 @@ export const createAdvertisement = createAsyncThunk(
 );
 
 export const userReducer = slice.reducer;
+export const { getAllUsers } = slice.selectors;
+
 // export const {} = slice.selectors;

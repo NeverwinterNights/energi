@@ -1,0 +1,25 @@
+.root {
+  border: 1px solid rgb(0, 106, 238);
+  border-radius: 20px;
+  padding: 20px;
+  width: 300px;
+  height: 550px;
+
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding-bottom: 20px;
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.textarea {
+  padding: 5px;
+}

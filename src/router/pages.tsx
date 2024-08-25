@@ -1,18 +1,18 @@
 import { Route, Routes } from "react-router-dom";
 
-import { PrivateRoute } from "@/router/private-route";
-import { PATH } from "@/router/path";
 import { Advert, Login, Main, Users } from "@/pages";
+import { PATH } from "@/router/path";
+import { PrivateRoute } from "@/router/private-route";
 
 export const Pages = () => {
   return (
     <Routes>
-      <Route path={PATH.LOGIN} element={<Login />} />
+      <Route element={<Login />} path={PATH.LOGIN} />
 
       <Route element={<PrivateRoute />}>
-        <Route index path={"/"} element={<Main />} />
-        <Route path={PATH.USERS} element={<Users />} />
-        <Route path={PATH.ADVERT} element={<Advert />} />
+        <Route element={<Main />} index path={"/"} />
+        <Route element={<Users />} path={PATH.USERS} />
+        <Route element={<Advert />} path={PATH.ADVERT} />
       </Route>
     </Routes>
   );
