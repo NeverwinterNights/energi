@@ -1,5 +1,6 @@
-import s from "./advert.module.scss";
 import { Typography } from "@/components/ui";
+
+import s from "./advert.module.scss";
 
 export const Advert = () => {
   return (
