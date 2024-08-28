@@ -74,6 +74,7 @@ export const fetchAllUsers = createAsyncThunk(
           phone: userData.phone,
           uid: doc.id,
           username: userData.username,
+          posts: userData.posts,
         });
       });
 

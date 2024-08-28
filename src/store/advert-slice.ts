@@ -1,3 +1,4 @@
+import { Advert, AdvertState, FetchAdvertsParams } from "@/types";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {
   Timestamp,
@@ -5,36 +6,84 @@ import {
   collection,
   deleteDoc,
   doc,
+  limit as firebaseLimit,
+  startAfter as firebaseStartAfter,
   getDocs,
   getFirestore,
+  increment,
+  orderBy,
   query,
   updateDoc,
   where,
 } from "firebase/firestore";
 
-// Тип объявления
-type Advert = {
-  category: string;
-  created: Date;
-  description: string;
-  id: string;
-  modified: Date;
-  price: number;
-  title: string;
-  views: number;
-  userId: string;
-};
-
-// Расширенная структура стейта
-type AdvertState = {
-  advertByAllUser: { [key: string]: Advert[] };
-  advertById: { [key: string]: Advert[] };
-};
-
-const initialState: AdvertState = {
+export const initialState: AdvertState = {
   advertByAllUser: {},
   advertById: {},
+  allAdverts: [],
+  lastVisible: null,
 };
+
+// Санка для получения объявлений с пагинацией
+export const fetchAdvertsWithPagination = createAsyncThunk<
+  { adverts: Advert[]; lastVisible: null | string }, // Тип возвращаемого значения
+  FetchAdvertsParams, // Тип аргумента
+  { rejectValue: string }
+>(
+  "advert/fetchAdvertsWithPagination",
+  async (params = {}, { rejectWithValue }) => {
+    try {
+      const db = getFirestore();
+      const advertsRef = collection(db, "adverts");
+      const limitValue = params.limit ?? 10; // Устанавливаем значение по умолчанию для limit
+      let q = query(
+        advertsRef,
+        orderBy("created", "desc"),
+        firebaseLimit(limitValue),
+      );
+
+      if (params.startAfter) {
+        const startAfterDoc = doc(db, "adverts", params.startAfter);
+
+        q = query(
+          advertsRef,
+          orderBy("created", "desc"),
+          firebaseStartAfter(startAfterDoc),
+          firebaseLimit(limitValue),
+        );
+      }
+      const querySnapshot = await getDocs(q);
+      const adverts: Advert[] = [];
+      let lastVisible: null | string = null;
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data() as Omit<Advert, "id">;
+
+        adverts.push({
+          ...data,
+          id: doc.id,
+          created: (data.created as unknown as Timestamp)
+            .toDate()
+            .toISOString(),
+          modified: (data.modified as unknown as Timestamp)
+            .toDate()
+            .toISOString(), // Преобразование в строку
+        });
+      });
+
+      if (!querySnapshot.empty) {
+        const lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
+
+        lastVisible = lastDoc.id;
+      }
+      console.log("adverts", adverts);
+
+      return { adverts, lastVisible };
+    } catch (error) {
+      return rejectWithValue("Failed to fetch adverts");
+    }
+  },
+);
 
 // Санка для получения объявлений пользователя
 export const fetchUserAdverts = createAsyncThunk<
@@ -46,7 +95,6 @@ export const fetchUserAdverts = createAsyncThunk<
     const db = getFirestore();
     const q = query(collection(db, "adverts"), where("userId", "==", userId));
     const querySnapshot = await getDocs(q);
-
     const adverts: Advert[] = [];
 
     querySnapshot.forEach((doc) => {
@@ -55,8 +103,10 @@ export const fetchUserAdverts = createAsyncThunk<
       adverts.push({
         ...data,
         id: doc.id,
-        created: (data.created as unknown as Timestamp).toDate(), // Преобразование Timestamp в Date
-        modified: (data.modified as unknown as Timestamp).toDate(), // Преобразование Timestamp в Date
+        created: (data.created as unknown as Timestamp).toDate().toISOString(),
+        modified: (data.modified as unknown as Timestamp)
+          .toDate()
+          .toISOString(), // Преобразование в строку
       });
     });
 
@@ -69,7 +119,10 @@ export const fetchUserAdverts = createAsyncThunk<
 // Создание объявления
 export const createAdvert = createAsyncThunk<
   Advert, // Тип возвращаемого значения
-  { advert: Omit<Advert, "created" | "id" | "modified">; userId: string }, // Тип аргумента
+  {
+    advert: Omit<Advert, "created" | "id" | "modified" | "views">;
+    userId: string;
+  }, // Тип аргумента
   { rejectValue: string }
 >("advert/createAdvert", async (payload, { rejectWithValue }) => {
   try {
@@ -80,14 +133,21 @@ export const createAdvert = createAsyncThunk<
       userId,
       created: Timestamp.now(),
       modified: Timestamp.now(),
+      views: 0,
     };
     const docRef = await addDoc(collection(db, "adverts"), newAdvert);
+
+    const userDocRef = doc(db, "users", userId);
+
+    await updateDoc(userDocRef, {
+      posts: increment(1), // Увеличиваем количество постов на 1
+    });
 
     return {
       ...newAdvert,
       id: docRef.id,
-      created: newAdvert.created.toDate(),
-      modified: newAdvert.modified.toDate(),
+      created: newAdvert.created.toDate().toISOString(),
+      modified: newAdvert.modified.toDate().toISOString(),
     };
   } catch (error) {
     return rejectWithValue("Failed to create advert");
@@ -111,7 +171,6 @@ export const deleteAdvert = createAsyncThunk<
     return rejectWithValue("Failed to delete advert");
   }
 });
-
 // Обновление объявления
 export const updateAdvert = createAsyncThunk<
   Advert, // Тип возвращаемого значения
@@ -136,8 +195,8 @@ export const updateAdvert = createAsyncThunk<
     return {
       ...updateData,
       id: advertId,
-      created: new Date(), // Используем текущую дату как временную метку
-      modified: updateData.modified.toDate(),
+      created: new Date().toISOString(),
+      modified: updateData.modified.toDate().toISOString(),
     } as Advert;
   } catch (error) {
     return rejectWithValue("Failed to update advert");
@@ -163,15 +222,15 @@ const slice = createSlice({
         const newAdvert = action.payload;
         const userId = newAdvert.userId;
 
-        // Обновляем advertByAllUser
         if (Array.isArray(state.advertByAllUser[userId])) {
           state.advertByAllUser[userId].push(newAdvert);
         } else {
           state.advertByAllUser[userId] = [newAdvert];
         }
-
         // Обновляем advertById
         state.advertById[newAdvert.id] = [newAdvert];
+
+        state.allAdverts.unshift(newAdvert);
       })
       .addCase(createAdvert.rejected, (_state, action) => {
         console.error(action.payload || "Failed to create advert");
@@ -180,7 +239,6 @@ const slice = createSlice({
       .addCase(deleteAdvert.fulfilled, (state, action) => {
         const { advertId, userId } = action.payload;
 
-        // Удаляем из advertByAllUser
         const advertsAllUser = state.advertByAllUser[userId];
 
         if (advertsAllUser) {
@@ -188,8 +246,6 @@ const slice = createSlice({
             (ad) => ad.id !== advertId,
           );
         }
-
-        // Удаляем из advertById
         delete state.advertById[advertId];
       })
       .addCase(deleteAdvert.rejected, (_state, action) => {
@@ -200,7 +256,6 @@ const slice = createSlice({
         const updatedAdvert = action.payload;
         const userId = updatedAdvert.userId;
 
-        // Обновляем advertByAllUser
         const advertsAllUser = state.advertByAllUser[userId];
 
         if (advertsAllUser) {
@@ -212,15 +267,34 @@ const slice = createSlice({
             advertsAllUser[advertIndex] = updatedAdvert;
           }
         }
-
-        // Обновляем advertById
         state.advertById[updatedAdvert.id] = [updatedAdvert];
       })
       .addCase(updateAdvert.rejected, (_state, action) => {
         console.error(action.payload || "Failed to update advert");
+      })
+      // Обработка получения объявлений с пагинацией
+      .addCase(fetchAdvertsWithPagination.fulfilled, (state, action) => {
+        const { adverts, lastVisible } = action.payload;
+
+        const newAdverts = adverts.filter(
+          (newAd) =>
+            !state.allAdverts.some((existingAd) => existingAd.id === newAd.id),
+        );
+
+        state.allAdverts = [...state.allAdverts, ...newAdverts];
+        state.lastVisible = lastVisible;
+      })
+      .addCase(fetchAdvertsWithPagination.rejected, (_state, action) => {
+        console.error(action.payload || "Failed to fetch adverts");
       });
+  },
+  selectors: {
+    getAllAdverts: (state: AdvertState) => state.allAdverts,
+    getLastVisible: (state: AdvertState) => state.lastVisible,
+    getAdvertsByUserId: (state: AdvertState, userId: string) =>
+      state.advertByAllUser[userId] || [],
   },
 });
 
-// Экспортируем редьюсер и экшены
+export const { getAllAdverts, getLastVisible } = slice.selectors;
 export const advertReducer = slice.reducer;

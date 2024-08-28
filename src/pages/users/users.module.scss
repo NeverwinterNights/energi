@@ -1,0 +1,15 @@
+.root {
+  display: flex;
+  flex-wrap: wrap;
+
+  width: 100%;
+  margin: 0 -15px;
+  padding: 20px;
+
+}
+
+.userItem {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}

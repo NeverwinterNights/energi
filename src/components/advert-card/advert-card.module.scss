@@ -1,0 +1,88 @@
+.wrapper {
+  flex: 0 1 25%;
+  padding: 0 10px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+  min-height: 280px;
+  margin: 16px auto; /* Центрирование карточки */
+  padding: 16px;
+
+  border: 1px solid rgb(0 106 238);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
+}
+
+.title {
+  min-height: 30px;
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  color: white;
+}
+
+.price {
+  margin: 8px 0;
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #007bff;
+}
+
+.description {
+  margin: 8px 0;
+  font-size: 0.8rem;
+  color: white;
+
+}
+
+.category {
+  margin: 8px 0;
+  font-size: 0.875rem;
+  color: white;
+
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+
+  margin-top: 16px;
+
+  font-size: 0.75rem;
+  color: white;
+
+}
+
+.desc {
+  overflow: hidden;
+  flex: 1;
+  word-wrap: break-word;
+}
+
+.rootDesc {
+  max-height: 192px;
+
+  font-size: 13px !important;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 24px; /* 171.429% */
+  color: var(--light-100);
+
+  span {
+    display: inline !important;
+  }
+}
+
+.anchor {
+  cursor: pointer;
+
+  display: inline-block !important;
+
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 24px; /* 171.429% */
+  color: var(--primary-500);
+}

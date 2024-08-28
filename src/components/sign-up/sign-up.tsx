@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
 import { Button, Card, Modal, Typography } from "@/components/ui";
-import { auth, db } from "@/firebase";
 import { phoneFormatter } from "@/helpers";
 import { PATH } from "@/router";
 import {
@@ -12,14 +11,17 @@ import {
 } from "@/schemas/create-user-modal-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 // import { useAppDispatch } from "@/store/store";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+
+import { createUserAsync } from "@/store/auth-slice";
+import { useAppDispatch } from "@/store/store";
 
 import s from "./sign-up.module.scss";
 
 import { ControlledInput } from "../controlled/controlled-input";
 
 export const SignUp = () => {
+  const dispatch = useAppDispatch();
+
   const {
     handleSubmit,
     control,
@@ -53,28 +55,37 @@ export const SignUp = () => {
 
   const onSubmit = async (data: CreateUserFormValues) => {
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        data.email,
-        data.password,
-      );
-
-      const user = userCredential.user;
-
-      await setDoc(doc(db, "users", user.uid), {
-        firstName: data.firstName,
-        lastName: data.lastName,
-        phone: data.phone,
-        email: data.email,
-        username: data.username,
-        createdAt: user.metadata.creationTime,
-      });
-      console.log("User signed up and data saved:", user.uid);
+      await dispatch(createUserAsync(data)).unwrap(); // Запускаем thunk
       setIsOpen(true);
     } catch (error: any) {
       console.error("Error signing up:", error.message);
     }
   };
+
+  // const onSubmit = async (data: CreateUserFormValues) => {
+  //   try {
+  //     const userCredential = await createUserWithEmailAndPassword(
+  //       auth,
+  //       data.email,
+  //       data.password,
+  //     );
+  //
+  //     const user = userCredential.user;
+  //
+  //     await setDoc(doc(db, "users", user.uid), {
+  //       firstName: data.firstName,
+  //       lastName: data.lastName,
+  //       phone: data.phone,
+  //       email: data.email,
+  //       username: data.username,
+  //       createdAt: user.metadata.creationTime,
+  //     });
+  //     console.log("User signed up and data saved:", user.uid);
+  //     setIsOpen(true);
+  //   } catch (error: any) {
+  //     console.error("Error signing up:", error.message);
+  //   }
+  // };
   const handleChangeModal = () => {
     setIsOpen(false);
     navigate(PATH.LOGIN);

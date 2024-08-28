@@ -1,1 +1,0 @@
-export { Advert } from "./advert";

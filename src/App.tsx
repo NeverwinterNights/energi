@@ -1,14 +1,23 @@
 import { Provider } from "react-redux";
-import { store } from "@/store/store";
+
 import { Router } from "@/router/router";
+import { store } from "@/store/store";
 
 export function App() {
   return (
     <Provider store={store}>
-      {/*<BrowserRouter>*/}
-      {/*<Layout />*/}
-      {/*<Pages />*/}
-      <Router />
+      <div
+        style={{
+          maxWidth: "1100px",
+          margin: "0 auto",
+          backgroundColor: "var(--dark-700)",
+        }}
+      >
+        {/*<BrowserRouter>*/}
+        {/*<Layout />*/}
+        {/*<Pages />*/}
+        <Router />
+      </div>
       {/*</BrowserRouter>*/}
     </Provider>
   );

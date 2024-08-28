@@ -1,5 +1,6 @@
-import { CSSProperties, ElementRef, forwardRef, ReactElement } from "react";
+import { CSSProperties, ElementRef, ReactElement, forwardRef } from "react";
 
+import { ArrowDownIcon } from "@/assets/icons";
 import * as SelectRadix from "@radix-ui/react-select";
 import { clsx } from "clsx";
 
@@ -7,7 +8,6 @@ import s from "./select.module.scss";
 
 import { Typography } from "../typography";
 import { SelectContent } from "./select-content/select-content";
-import { ArrowDownIcon } from "@/assets/icons";
 
 export type Option = { label: ReactElement | string; value: string };
 
