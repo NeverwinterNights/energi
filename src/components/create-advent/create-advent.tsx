@@ -32,6 +32,7 @@ export const CreateAdvent = () => {
       await dispatch(
         createAdvert({
           advert: {
+            nickname: user?.username!,
             title: data.title,
             category: data.category,
             description: data.descriptions,

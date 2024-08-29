@@ -34,6 +34,7 @@ export type Advert = {
   title: string;
   views: number;
   userId: string;
+  nickname: string;
 };
 
 // Расширенная структура стейта

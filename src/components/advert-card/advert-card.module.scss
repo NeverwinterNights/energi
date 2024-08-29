@@ -8,6 +8,7 @@
   flex-direction: column;
 
   width: 100%;
+  min-width: 199px;
   min-height: 280px;
   margin: 16px auto; /* Центрирование карточки */
   padding: 16px;
@@ -15,10 +16,12 @@
   border: 1px solid rgb(0 106 238);
   border-radius: 8px;
   box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
+
+  transition: all 0.3s ease 0s;
 }
 
 .title {
-  min-height: 30px;
+  // min-height: 30px;
   margin: 0 0 8px;
   font-size: 0.8rem;
   color: white;
@@ -85,4 +88,47 @@
   font-weight: 400 !important;
   line-height: 24px; /* 171.429% */
   color: var(--primary-500);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+}
+
+.close {
+  cursor: pointer;
+  color: rgb(0 106 238);
+  transition: all 0.3s ease 0s;
+
+  &:hover {
+    color: var(--danger-500);
+
+  }
+}
+
+.card:has(.close:hover) {
+  border: 1px solid var(--danger-500);
+}
+
+
+.modal {
+  width: 450px;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.modalBody {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 150px;
+}
+
+.modalText {
+  flex: 1;
 }

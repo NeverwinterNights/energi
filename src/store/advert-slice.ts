@@ -1,10 +1,10 @@
+/* eslint-disable max-lines */
 import { Advert, AdvertState, FetchAdvertsParams } from "@/types";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {
   Timestamp,
   addDoc,
   collection,
-  deleteDoc,
   doc,
   limit as firebaseLimit,
   startAfter as firebaseStartAfter,
@@ -13,6 +13,7 @@ import {
   increment,
   orderBy,
   query,
+  runTransaction,
   updateDoc,
   where,
 } from "firebase/firestore";
@@ -33,6 +34,7 @@ export const fetchAdvertsWithPagination = createAsyncThunk<
   "advert/fetchAdvertsWithPagination",
   async (params = {}, { rejectWithValue }) => {
     try {
+      console.log("fetchAdvertsWithPagination");
       const db = getFirestore();
       const advertsRef = collection(db, "adverts");
       const limitValue = params.limit ?? 10; // Устанавливаем значение по умолчанию для limit
@@ -76,7 +78,7 @@ export const fetchAdvertsWithPagination = createAsyncThunk<
 
         lastVisible = lastDoc.id;
       }
-      console.log("adverts", adverts);
+      console.log("advertsddddddddddd", adverts);
 
       return { adverts, lastVisible };
     } catch (error) {
@@ -156,21 +158,40 @@ export const createAdvert = createAsyncThunk<
 
 // Удаление объявления
 export const deleteAdvert = createAsyncThunk<
-  { advertId: string; userId: string }, // Тип возвращаемого значения
-  { advertId: string; userId: string }, // Тип аргумента
+  { advertId: string; userId: string },
+  { advertId: string; userId: string },
   { rejectValue: string }
->("advert/deleteAdvert", async (payload, { rejectWithValue }) => {
-  try {
-    const { advertId } = payload;
-    const db = getFirestore();
+>("advert/deleteAdvert", async (payload, { rejectWithValue, dispatch }) => {
+  const { advertId, userId } = payload;
+  const db = getFirestore();
 
-    await deleteDoc(doc(db, "adverts", advertId));
+  try {
+    await runTransaction(db, async (transaction) => {
+      const userRef = doc(db, "users", userId);
+      const userDoc = await transaction.get(userRef);
+
+      if (userDoc.exists()) {
+        const newPostCount = (userDoc.data().posts || 0) - 1;
+        const advertRef = doc(db, "adverts", advertId);
+
+        transaction.delete(advertRef);
+        transaction.update(userRef, { posts: newPostCount });
+      } else {
+        throw new Error("User does not exist");
+      }
+    });
+
+    // Refetch the adverts after successful deletion
+    await dispatch(fetchAdvertsWithPagination({ limit: 10 }));
 
     return payload;
   } catch (error) {
+    console.error("Transaction failed: ", error);
+
     return rejectWithValue("Failed to delete advert");
   }
 });
+
 // Обновление объявления
 export const updateAdvert = createAsyncThunk<
   Advert, // Тип возвращаемого значения
@@ -202,7 +223,6 @@ export const updateAdvert = createAsyncThunk<
     return rejectWithValue("Failed to update advert");
   }
 });
-
 const slice = createSlice({
   initialState,
   name: "advert",
@@ -276,13 +296,26 @@ const slice = createSlice({
       .addCase(fetchAdvertsWithPagination.fulfilled, (state, action) => {
         const { adverts, lastVisible } = action.payload;
 
-        const newAdverts = adverts.filter(
-          (newAd) =>
-            !state.allAdverts.some((existingAd) => existingAd.id === newAd.id),
+        console.log("adverts in thunks", adverts);
+
+        // Фильтруем существующие объявления и удаляем те, которые не вернулись с сервера
+        state.allAdverts = state.allAdverts.filter((existingAd) =>
+          adverts.some((newAd) => newAd.id === existingAd.id),
         );
 
-        state.allAdverts = [...state.allAdverts, ...newAdverts];
+        // Добавляем новые объявления, только если их ещё нет в состоянии
+        adverts.forEach((newAd) => {
+          if (
+            !state.allAdverts.some((existingAd) => existingAd.id === newAd.id)
+          ) {
+            state.allAdverts.push(newAd);
+          }
+        });
+
         state.lastVisible = lastVisible;
+
+        // console.log("newAdverts", adverts);
+        // console.log("state.allAdvertsl", state.allAdverts);
       })
       .addCase(fetchAdvertsWithPagination.rejected, (_state, action) => {
         console.error(action.payload || "Failed to fetch adverts");

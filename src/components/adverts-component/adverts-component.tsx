@@ -8,7 +8,8 @@ import {
   getAllAdverts,
   getLastVisible,
 } from "@/store/advert-slice";
-import { RootState, useAppDispatch } from "@/store/store";
+import { fetchCurrentUser, getUserData } from "@/store/auth-slice";
+import { RootState, useAppDispatch, useAppSelector } from "@/store/store";
 
 import s from "./adverts-component.module.scss";
 
@@ -18,6 +19,13 @@ export const AdvertsComponent = memo(() => {
   const lastVisible = useSelector(getLastVisible);
   const isLoading = useSelector((state: RootState) => state.app.isLoading);
 
+  const user = useAppSelector(getUserData);
+
+  console.log("adverts", adverts);
+  useEffect(() => {
+    // Проверка авторизации при монтировании компонента
+    dispatch(fetchCurrentUser());
+  }, [dispatch]);
   const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
@@ -53,13 +61,18 @@ export const AdvertsComponent = memo(() => {
   }, [dispatch, lastVisible, isLoading, loadingMore]);
 
   return (
-    <div>
+    <div className={s.container}>
       <Typography className={s.title} variant={"bold_text_16"}>
         Users Adverts
       </Typography>
       <div className={s.root}>
         {adverts.map((advert) => (
-          <AdvertCard className={s.items} advert={advert} key={advert.id} />
+          <AdvertCard
+            isMyAdvert={user?.uid === advert.userId}
+            className={s.items}
+            advert={advert}
+            key={advert.id}
+          />
         ))}
       </div>
       {isLoading && <p>Loading...</p>}
