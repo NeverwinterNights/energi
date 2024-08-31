@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 
 import { Button, Modal, Typography } from "@/components/ui";
 import { PATH } from "@/router";
+import { getIsLoading } from "@/store/app-slice";
 import { logoutUser } from "@/store/auth-slice";
-import { useAppDispatch } from "@/store/store";
+import { useAppDispatch, useAppSelector } from "@/store/store";
 
 import s from "./header.module.scss";
 
@@ -16,7 +17,8 @@ export const Header = ({ isAuth }: Props) => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const dispatch = useAppDispatch();
-  // const isLoading = useAppSelector(getIsLoading);
+  // eslint-disable-next-line no-undef
+  const isLoading = useAppSelector(getIsLoading);
 
   const logoutHandler = () => {
     setIsModalOpen(!isModalOpen);
@@ -34,9 +36,9 @@ export const Header = ({ isAuth }: Props) => {
     }
   };
 
-  // if (isLoading) {
-  //   return <Loader />;
-  // }
+  if (isLoading) {
+    return <div></div>;
+  }
 
   return (
     <>

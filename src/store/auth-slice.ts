@@ -1,5 +1,6 @@
 import { auth, db } from "@/firebase";
 import { CreateUserFormValues } from "@/schemas/create-user-modal-schema";
+import { setLoading } from "@/store/app-slice";
 import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {
   createUserWithEmailAndPassword,
@@ -85,10 +86,10 @@ export const fetchCurrentUser = createAsyncThunk<
   User | null,
   void,
   { rejectValue: string }
->("auth/fetchCurrentUser", async (_, { rejectWithValue }) => {
+>("auth/fetchCurrentUser", async (_, { rejectWithValue, dispatch }) => {
   return new Promise<User | null>((resolve, reject) => {
     onAuthStateChanged(auth, async (user) => {
-      // dispatch(setLoading(true));
+      dispatch(setLoading(true));
 
       if (user) {
         try {
@@ -118,7 +119,7 @@ export const fetchCurrentUser = createAsyncThunk<
       } else {
         resolve(null);
       }
-      // dispatch(setLoading(false));
+      dispatch(setLoading(false));
     });
   });
 });
@@ -128,8 +129,9 @@ export const addUserAsync = createAsyncThunk(
   "users/addUserAsync",
   async (
     loginData: { email: string; password: string },
-    { rejectWithValue },
+    { rejectWithValue, dispatch },
   ) => {
+    dispatch(setLoading(true));
     try {
       const userCredential = await signInWithEmailAndPassword(
         auth,
@@ -162,6 +164,8 @@ export const addUserAsync = createAsyncThunk(
       }
     } catch (error: any) {
       return rejectWithValue(error.message);
+    } finally {
+      dispatch(setLoading(false));
     }
   },
 );
@@ -211,12 +215,14 @@ export const createUserAsync = createAsyncThunk<
 // Thunk для выхода из системы
 export const logoutUser = createAsyncThunk(
   "users/logoutUserAsync",
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, dispatch }) => {
+    dispatch(setLoading(true));
     try {
       await signOut(auth);
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
+    dispatch(setLoading(false));
   },
 );
 
