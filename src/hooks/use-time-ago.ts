@@ -4,7 +4,7 @@ import { hoursTime, min } from "@/consts/time-declination";
 
 export const useTimeAgo = (createdAt: Date) => {
   const [timeAgo, setTimeAgo] = useState<string>("");
-
+console.log("")
   useEffect(() => {
     const calculateTimeAgo = () => {
       const difference = new Date().getTime() - new Date(createdAt).getTime();
